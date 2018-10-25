@@ -63,8 +63,13 @@ if cube != '':
 	if xmax is None: xmax = shape[2]
 	if ymax is None: ymax = shape[1]
 	if zmax is None: zmax = shape[0]
+	if xmin is None: xmin = 0
+	if ymin is None: ymin = 0
+	if zmin is None: zmin = 0
 	if len(shape) > 2:
 		fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
+	else:
+		fit = fit[ymin:ymax+1, xmin:xmax+1]
 	yl, xl = fit.shape
 	if std is None: std = np.nanstd(fit)
 	print('Collapsing dimension', dim, '\nGenerating image with std', std, '\nNew image shape', fit.shape)
