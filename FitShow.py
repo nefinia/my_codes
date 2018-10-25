@@ -57,7 +57,7 @@ if len(argv) < 3:
             -color: display numbers with colors (default=False).")
 
 if cube != '':
-	fit = getdata(cube)
+	fit = np.flipud(getdata(cube))
 	shape = fit.shape
 	print('Initial image shape', shape)
 	if xmax is None: xmax = shape[2]
