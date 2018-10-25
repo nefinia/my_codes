@@ -34,8 +34,12 @@ std = rdarg(argv, 'std', float, None)
 bin = rdarg(argv, 'bin', int, 1)
 dim = rdarg(argv, 'dim', int, 0)
 colors = rdarg(argv, 'color', bool, False)
-dmin = rdarg(argv, 'min', int, 0)
-dmax = rdarg(argv, 'max', int, None)
+xmin = rdarg(argv, 'xmin', int, 0)
+xmax = rdarg(argv, 'xmax', int, None)
+ymin = rdarg(argv, 'ymin', int, 0)
+ymax = rdarg(argv, 'ymax', int, None)
+zmin = rdarg(argv, 'zmin', int, 0)
+zmax = rdarg(argv, 'zmax', int, None)
 
 if len(argv) < 3:
 	print "FitShow\n\
@@ -49,33 +53,35 @@ if len(argv) < 3:
             -name:  fits file name.\n\
             -bin:   display numbers in multiples of the std (default=1).\n\
             -dim:   dimension to be collapsed (0, 1 or 2, default=0).\n\
-            -min:   minimum value of the collapsed dimension.\n\
-            -max:   maximum value of the collapsed dimension.\n\
+            -{c}min:   minimum value of the dimension (c=x,y,z).\n\
+            -{c}max:   maximum value of the dimension (c=x,y,z).\n\
             -std:   define your own standard deviation.\n\
             -color: display numbers with colors (default=False)."
 
 if cube != '':
 	fit = getdata(cube)
 	shape = fit.shape
-	print 'Image shape', shape
-	if dmax is None: dmax = shape[dim]
+	print 'Initial image shape', shape
+	if xmax is None: xmax = shape[2]
+	if ymax is None: ymax = shape[1]
+	if zmax is None: zmax = shape[0]
 	if len(shape) > 2:
-		if dim == 0: fit = np.nanmean(fit[dmin:dmax+1, :, :], dim)
-		if dim == 1: fit = np.nanmean(fit[:, dmin:dmax+1, :], dim)
-		if dim == 2: fit = np.nanmean(fit[:, :, dmin:dmax+1], dim)
+		fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
 	yl, xl = fit.shape
 	if std is None: std = np.nanstd(fit)
+	print 'Collapsing dimension', dim
 	print 'Generating image with std', std
+	print 'New image shape', fit.shape
 	std = bin * std
 	s = ''
 	for y in range(yl):
 		for x in range(xl):
 			d = fit[y, x]
-			if d < 0: s += '\033[0m-'
+			if d < 0: s += '\033[0m' * colors + '-'
 			for i in range(10):
 				if (d >= i * std) & (d < (i + 1) * std):
-					if colors: s += '\033[1;3%dm%d' % (i, i)
-					else: s += '%d' % i
-			if d >= 10 * std: s += '\033[0m*'
+					s += ('\033[1;3%dm' % i) * colors + '%d' % i
+			if d >= 10 * std:
+				s += '\033[0m' * colors + '*'
 		s += '\n'
-	print s, '\033[0m '
+	print s + '\033[0m ' * colors
