@@ -1,7 +1,7 @@
 from __future__ import print_function
 __author__ = 'nefinia'
 import numpy as np
-from pyfits import getdata
+from astropy.io.fits import getdata
 from sys import argv
 
 def rdarg(argv, key, type=None, default=None, listtype=int):
