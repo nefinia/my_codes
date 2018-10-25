@@ -1,10 +1,8 @@
+from __future__ import print_function
 __author__ = 'nefinia'
-
 import numpy as np
-import os
 from pyfits import getdata
 from sys import argv
-
 
 def rdarg(argv, key, type=None, default=None, listtype=int):
 	if len(argv) > 1:
@@ -42,9 +40,9 @@ zmin = rdarg(argv, 'zmin', int, 0)
 zmax = rdarg(argv, 'zmax', int, None)
 
 if len(argv) < 3:
-	print "FitShow\n\
+	print("FitShow\n\
 	Print fits files in the terminal.\n\
-    each pixel will be displayed as a number corresponding to its\n\
+    Each pixel will be displayed as a number corresponding to its\n\
     standard deviation with respect to the mean.\n\
     Negative values will be displayed with '-'.\n\
     Values above 10 sigma will be displayed with '*'.\n\
@@ -56,12 +54,12 @@ if len(argv) < 3:
             -{c}min:   minimum value of the dimension (c=x,y,z).\n\
             -{c}max:   maximum value of the dimension (c=x,y,z).\n\
             -std:   define your own standard deviation.\n\
-            -color: display numbers with colors (default=False)."
+            -color: display numbers with colors (default=False).")
 
 if cube != '':
 	fit = getdata(cube)
 	shape = fit.shape
-	print 'Initial image shape', shape
+	print('Initial image shape', shape)
 	if xmax is None: xmax = shape[2]
 	if ymax is None: ymax = shape[1]
 	if zmax is None: zmax = shape[0]
@@ -69,9 +67,7 @@ if cube != '':
 		fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
 	yl, xl = fit.shape
 	if std is None: std = np.nanstd(fit)
-	print 'Collapsing dimension', dim
-	print 'Generating image with std', std
-	print 'New image shape', fit.shape
+	print('Collapsing dimension', dim, '\nGenerating image with std', std, '\nNew image shape', fit.shape)
 	std = bin * std
 	s = ''
 	for y in range(yl):
@@ -84,4 +80,4 @@ if cube != '':
 			if d >= 10 * std:
 				s += '\033[0m' * colors + '*'
 		s += '\n'
-	print s + '\033[0m ' * colors
+	print(s, '\033[0m ' * colors)
