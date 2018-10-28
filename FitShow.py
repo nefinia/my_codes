@@ -38,6 +38,7 @@ ymin = rdarg(argv, 'ymin', int, 0)
 ymax = rdarg(argv, 'ymax', int, None)
 zmin = rdarg(argv, 'zmin', int, 0)
 zmax = rdarg(argv, 'zmax', int, None)
+interpolate = rdarg(argv, 'interp', bool, True)
 
 if len(argv) < 3:
 	print("FitShow\n\
@@ -69,6 +70,18 @@ if cube != '':
 	if std is None: std = np.nanstd(fit)
 	print('Collapsing dimension', dim, '\nGenerating image with std', std, '\nNew image shape', fit.shape)
 	std = bin * std
+	## Interplation to terminal size
+	if interpolate:
+        	from scipy.interpolate import interp2d
+        	char_aspect = 2  # Characters + space between them twice as high as wide
+        	rows, columns = os.popen('stty size', 'r').read().split()
+        	y, x = np.arange(yl), np.arange(xl)
+        	im_aspect = yl/xl
+        	# We want to fill the width of the term window, but allow scrolling
+        	newy, newx = np.linspace(0, y.max(), int(int(columns)*im_aspect/char_aspect)), np.linspace(0, x.max(), int(columns))#//char_aspect)
+        	fit = interp2d(x, y, fit, kind='linear')(newx, newy)
+        	yl, xl = fit.shape
+	# End interpolation stuff
 	s = ''
 	for y in range(yl):
 		for x in range(xl):
