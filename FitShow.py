@@ -111,8 +111,8 @@ def interpolate(fit):
 if interpolate: fit = interpolate(fit)
 
 
-def print_cell(fit, x, y, colors):
-	""" Return one (pix)cell """
+def print_cell(fit, x, y):
+	global std
 	s = ''
 	d = fit[y, x]
 	if d < 0: s += '\033[0m' * colors + '-'
@@ -123,13 +123,13 @@ def print_cell(fit, x, y, colors):
 	return s
 
 
-def print_fits(fit, colors):
+def print_fits(fit):
 	""" Display (finally) the fit on term """
 	yl, xl = fit.shape
 	s = ''
 	for y in range(yl)[::-1]:
 		for x in range(xl):
-			s += print_cell(fit, x, y, colors)
+			s += print_cell(fit, x, y)
 		s += '\n'
 	print(s, '\033[0m ' * colors)
 
