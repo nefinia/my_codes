@@ -4,6 +4,7 @@ __author__ = 'nefinia'
 import numpy as np
 import astropy.io.fits as fits
 from sys import argv, exit
+from math import floor, log, pow
 
 def usage():
 	"""FitShow
@@ -55,7 +56,8 @@ def rdarg(argv, key, type=None, default=None, listtype=int):
 # Argument parsing (without argparse but super nicely)
 cube = rdarg(argv, 'name', str, '')
 std = rdarg(argv, 'std', float, None)
-bin = rdarg(argv, 'bin', int, 1)
+bin = rdarg(argv, 'bin', float, 1)
+logs = rdarg(argv, 'log', bool, False)
 dim = rdarg(argv, 'dim', int, 0)
 colors = rdarg(argv, 'color', bool, True)
 xmin = rdarg(argv, 'xmin', int, 0)
@@ -106,22 +108,39 @@ def interpolate(fit):
 
 def mesure_noise(fit):
 	""" fit -> std """
-	if std is None: noise = np.nanstd(fit)
-	else : noise = std
+	if std is None:
+		noise = np.nanstd(fit)
+	else:
+		noise = std
 	print('\nGenerating image with std', noise, '\nNew image shape', fit.shape)
 	return bin * noise
 
 
+def scale_log(i):
+	""" (float) i -> (int) i """
+	# Log for range 7-10 (3 intervales, 4 values)
+	if 6 < i:
+		i -= 6
+		i = log(i+1) 
+		i /= log(3)
+		i += 6
+	return i
+	
+
 def print_cell(fit, x, y):
-	global std
-	s = ''
 	d = fit[y, x]
-	if d < 0: s += '\033[0m' * colors + '-'
-	for i in range(10):
-		if (d >= i * std) & (d < (i + 1) * std):
-			s += ('\033[1;3%dm' % i) * colors + '%d' % i
-	if d >= 10 * std: s += '\033[0m' * colors + '*'
-	return s
+	i = d / std
+	# Print '0' if negative
+	if 0 > i:
+		return '\033[0m' * colors + '-'
+	# Scale intensity
+	if logs: i = scale_log(i)
+	i = floor(i)
+	# Print its number
+	if 10 > i:
+		return ('\033[1;3%dm' % i) * colors + '%d' % i
+	# Print '*' if too high
+	return '\033[0m' * colors + '*'
 
 
 def print_fits(fit):
