@@ -85,10 +85,13 @@ if std is None: std = np.nanstd(fit)
 print('\nGenerating image with std', std, '\nNew image shape', fit.shape)
 std = bin * std
 
-## Interpolation to terminal size
-if interpolate:
+
+
+def interpolate(fit):
+	""" Interpolate to terminal size : fit -> fit"""
 	from scipy.interpolate import interp2d
 	import os
+	yl, xl = fit.shape
 	char_aspect = 2  # Characters + space between them twice as high as wide
 	rows, columns = os.popen('stty size', 'r').read().split()
 	y, x = np.arange(yl), np.arange(xl)
@@ -101,7 +104,9 @@ if interpolate:
 	if 180 < len(newx): print("I lo tienes mas grande que el mio !")
 	fit = interp2d(x, y, fit, kind='linear')(newx, newy)
 	yl, xl = fit.shape
-# End interpolation stuff
+	return fit
+
+if interpolate: fit = interpolate(fit)
 
 
 def print_cell(fit, x, y, colors):
