@@ -89,6 +89,9 @@ if cube != '':
 		# We want to fill the width of the term window, but allow scrolling
 		newy, newx = np.linspace(0, y.max(), int(int(columns) * im_aspect / char_aspect)), np.linspace(0, x.max(), int(
 			columns))  # //char_aspect)
+		# Log
+		print('Tu terminal mide', len(newx), 'X', len(newy), "cajas")
+		if 180 < len(newx): print("I lo tienes mas grande que el mio !")
 		fit = interp2d(x, y, fit, kind='linear')(newx, newy)
 		yl, xl = fit.shape
 	# End interpolation stuff
