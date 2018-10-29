@@ -3,7 +3,7 @@ from __future__ import print_function
 __author__ = 'nefinia'
 import numpy as np
 import astropy.io.fits as fits
-from sys import argv
+from sys import argv, exit
 
 def usage():
 	"""FitShow
@@ -65,64 +65,64 @@ ymax = rdarg(argv, 'ymax', int, None)
 zmin = rdarg(argv, 'zmin', int, 0)
 zmax = rdarg(argv, 'zmax', int, None)
 interpolate = rdarg(argv, 'interp', bool, True)
-
 if len(argv) < 3: usage()
+if '' == cube: exit(1)
 
-if cube != '':
-	fit = fits.getdata(cube)
-	shape = fit.shape
-	print('Initial image shape', shape)
-	if xmax is None: xmax = shape[-1]
-	if ymax is None: ymax = shape[-2]
-	if len(shape) > 2:
-		print('Collapsing dimension', dim)
-		if zmax is None: zmax = shape[0]
-		fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
-	else:
-		fit = fit[ymin:ymax + 1, xmin:xmax + 1]
+
+fit = fits.getdata(cube)
+shape = fit.shape
+print('Initial image shape', shape)
+if xmax is None: xmax = shape[-1]
+if ymax is None: ymax = shape[-2]
+if len(shape) > 2:
+	print('Collapsing dimension', dim)
+	if zmax is None: zmax = shape[0]
+	fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
+else:
+	fit = fit[ymin:ymax + 1, xmin:xmax + 1]
+yl, xl = fit.shape
+if std is None: std = np.nanstd(fit)
+print('\nGenerating image with std', std, '\nNew image shape', fit.shape)
+std = bin * std
+
+## Interpolation to terminal size
+if interpolate:
+	from scipy.interpolate import interp2d
+	import os
+	char_aspect = 2  # Characters + space between them twice as high as wide
+	rows, columns = os.popen('stty size', 'r').read().split()
+	y, x = np.arange(yl), np.arange(xl)
+	im_aspect = yl / xl
+	# We want to fill the width of the term window, but allow scrolling
+	newy, newx = np.linspace(0, y.max(), int(int(columns) * im_aspect / char_aspect)), np.linspace(0, x.max(), int(
+		columns))  # //char_aspect)
+	# Log
+	print('Tu terminal mide', len(newx), 'X', len(newy), "cajas")
+	if 180 < len(newx): print("I lo tienes mas grande que el mio !")
+	fit = interp2d(x, y, fit, kind='linear')(newx, newy)
 	yl, xl = fit.shape
-	if std is None: std = np.nanstd(fit)
-	print('\nGenerating image with std', std, '\nNew image shape', fit.shape)
-	std = bin * std
-	
-	## Interpolation to terminal size
-	if interpolate:
-		from scipy.interpolate import interp2d
-		import os
-		char_aspect = 2  # Characters + space between them twice as high as wide
-		rows, columns = os.popen('stty size', 'r').read().split()
-		y, x = np.arange(yl), np.arange(xl)
-		im_aspect = yl / xl
-		# We want to fill the width of the term window, but allow scrolling
-		newy, newx = np.linspace(0, y.max(), int(int(columns) * im_aspect / char_aspect)), np.linspace(0, x.max(), int(
-			columns))  # //char_aspect)
-		# Log
-		print('Tu terminal mide', len(newx), 'X', len(newy), "cajas")
-		if 180 < len(newx): print("I lo tienes mas grande que el mio !")
-		fit = interp2d(x, y, fit, kind='linear')(newx, newy)
-		yl, xl = fit.shape
-	# End interpolation stuff
-	
-
-	def print_cell(fit, x, y, colors):
-		""" Return one (pix)cell """
-		s = ''
-		d = fit[y, x]
-		if d < 0: s += '\033[0m' * colors + '-'
-		for i in range(10):
-			if (d >= i * std) & (d < (i + 1) * std):
-				s += ('\033[1;3%dm' % i) * colors + '%d' % i
-		if d >= 10 * std: s += '\033[0m' * colors + '*'
-		return s
+# End interpolation stuff
 
 
-	def print_fits(fit, xl, yl, colors):
-		""" Display (finally) the fit on term """
-		s = ''
-		for y in range(yl)[::-1]:
-			for x in range(xl):
-				s += print_cell(fit, x, y, colors)
-			s += '\n'
-		print(s, '\033[0m ' * colors)
+def print_cell(fit, x, y, colors):
+	""" Return one (pix)cell """
+	s = ''
+	d = fit[y, x]
+	if d < 0: s += '\033[0m' * colors + '-'
+	for i in range(10):
+		if (d >= i * std) & (d < (i + 1) * std):
+			s += ('\033[1;3%dm' % i) * colors + '%d' % i
+	if d >= 10 * std: s += '\033[0m' * colors + '*'
+	return s
 
-	print_fits(fit, xl, yl, colors)
+
+def print_fits(fit, xl, yl, colors):
+	""" Display (finally) the fit on term """
+	s = ''
+	for y in range(yl)[::-1]:
+		for x in range(xl):
+			s += print_cell(fit, x, y, colors)
+		s += '\n'
+	print(s, '\033[0m ' * colors)
+
+print_fits(fit, xl, yl, colors)
