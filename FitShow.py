@@ -103,18 +103,25 @@ if cube != '':
 		yl, xl = fit.shape
 	# End interpolation stuff
 	
+
+	def print_cell(fit, x, y, colors):
+		""" Return one (pix)cell """
+		s = ''
+		d = fit[y, x]
+		if d < 0: s += '\033[0m' * colors + '-'
+		for i in range(10):
+			if (d >= i * std) & (d < (i + 1) * std):
+				s += ('\033[1;3%dm' % i) * colors + '%d' % i
+		if d >= 10 * std: s += '\033[0m' * colors + '*'
+		return s
+
+
 	def print_fits(fit, xl, yl, colors):
-		""" Display (finally) the fit on term
-		"""
+		""" Display (finally) the fit on term """
 		s = ''
 		for y in range(yl)[::-1]:
 			for x in range(xl):
-				d = fit[y, x]
-				if d < 0: s += '\033[0m' * colors + '-'
-				for i in range(10):
-					if (d >= i * std) & (d < (i + 1) * std):
-						s += ('\033[1;3%dm' % i) * colors + '%d' % i
-				if d >= 10 * std: s += '\033[0m' * colors + '*'
+				s += print_cell(fit, x, y, colors)
 			s += '\n'
 		print(s, '\033[0m ' * colors)
 
