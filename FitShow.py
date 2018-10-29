@@ -28,6 +28,8 @@ def usage():
 
 
 def rdarg(argv, key, type=None, default=None, listtype=int):
+	""" Argument helper
+	"""
 	if len(argv) > 1:
 		opt = np.where([a == '-%s' % key for a in argv])[0] + 1
 		if len(opt) > 0:
@@ -50,6 +52,7 @@ def rdarg(argv, key, type=None, default=None, listtype=int):
 	if default is not None: return default
 
 
+# Argument parsing (without argparse but super nicely)
 cube = rdarg(argv, 'name', str, '')
 std = rdarg(argv, 'std', float, None)
 bin = rdarg(argv, 'bin', int, 1)
@@ -100,14 +103,19 @@ if cube != '':
 		yl, xl = fit.shape
 	# End interpolation stuff
 	
-	s = ''
-	for y in range(yl)[::-1]:
-		for x in range(xl):
-			d = fit[y, x]
-			if d < 0: s += '\033[0m' * colors + '-'
-			for i in range(10):
-				if (d >= i * std) & (d < (i + 1) * std):
-					s += ('\033[1;3%dm' % i) * colors + '%d' % i
-			if d >= 10 * std: s += '\033[0m' * colors + '*'
-		s += '\n'
-	print(s, '\033[0m ' * colors)
+	def print_fits(fit, xl, yl, colors):
+		""" Display (finally) the fit on term
+		"""
+		s = ''
+		for y in range(yl)[::-1]:
+			for x in range(xl):
+				d = fit[y, x]
+				if d < 0: s += '\033[0m' * colors + '-'
+				for i in range(10):
+					if (d >= i * std) & (d < (i + 1) * std):
+						s += ('\033[1;3%dm' % i) * colors + '%d' % i
+				if d >= 10 * std: s += '\033[0m' * colors + '*'
+			s += '\n'
+		print(s, '\033[0m ' * colors)
+
+	print_fits(fit, xl, yl, colors)
