@@ -5,6 +5,27 @@ import numpy as np
 import astropy.io.fits as fits
 from sys import argv
 
+def usage():
+	"""FitShow
+
+	Print fits files in the terminal.
+    Each pixel will be displayed as a number corresponding to its
+    standard deviation with respect to the mean.
+    Negative values will be displayed with '-'.
+    Values above 10 sigma will be displayed with '*'.
+    3d fits will be collapsed into two axis.
+    
+    Options:
+            -name:      fits file name.
+            -bin:       display numbers in multiples of the std (default=1).
+            -dim:       dimension to be collapsed (0, 1 or 2, default=0).
+            -{c}min:    minimum value of the dimension (c=x,y,z).
+            -{c}max:    maximum value of the dimension (c=x,y,z).
+            -std:       define your own standard deviation.
+            -color:     display numbers with colors (default=True).
+            -interp:    interpolate pixels to fit terminal size (default=True)."""
+	print(usage.__doc__)
+
 
 def rdarg(argv, key, type=None, default=None, listtype=int):
 	if len(argv) > 1:
@@ -42,24 +63,7 @@ zmin = rdarg(argv, 'zmin', int, 0)
 zmax = rdarg(argv, 'zmax', int, None)
 interpolate = rdarg(argv, 'interp', bool, True)
 
-if len(argv) < 3:
-	print("""FitShow\n\
-	Print fits files in the terminal.
-    Each pixel will be displayed as a number corresponding to its
-    standard deviation with respect to the mean.
-    Negative values will be displayed with '-'.
-    Values above 10 sigma will be displayed with '*'.
-    3d fits will be collapsed into two axis.
-    
-    Options:
-            -name:      fits file name.
-            -bin:       display numbers in multiples of the std (default=1).
-            -dim:       dimension to be collapsed (0, 1 or 2, default=0).
-            -{c}min:    minimum value of the dimension (c=x,y,z).
-            -{c}max:    maximum value of the dimension (c=x,y,z).
-            -std:       define your own standard deviation.
-            -color:     display numbers with colors (default=True).
-            -interp:    interpolate pixels to fit terminal size (default=True).""")
+if len(argv) < 3: usage()
 
 if cube != '':
 	fit = fits.getdata(cube)
