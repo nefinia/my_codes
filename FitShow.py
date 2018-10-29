@@ -69,6 +69,7 @@ if len(argv) < 3: usage()
 if '' == cube: exit(1)
 
 
+# Reshape
 fit = fits.getdata(cube)
 shape = fit.shape
 print('Initial image shape', shape)
@@ -80,7 +81,8 @@ if len(shape) > 2:
 	fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
 else:
 	fit = fit[ymin:ymax + 1, xmin:xmax + 1]
-yl, xl = fit.shape
+
+# Extract shape
 if std is None: std = np.nanstd(fit)
 print('\nGenerating image with std', std, '\nNew image shape', fit.shape)
 std = bin * std
@@ -121,8 +123,9 @@ def print_cell(fit, x, y, colors):
 	return s
 
 
-def print_fits(fit, xl, yl, colors):
+def print_fits(fit, colors):
 	""" Display (finally) the fit on term """
+	yl, xl = fit.shape
 	s = ''
 	for y in range(yl)[::-1]:
 		for x in range(xl):
@@ -130,4 +133,6 @@ def print_fits(fit, xl, yl, colors):
 		s += '\n'
 	print(s, '\033[0m ' * colors)
 
-print_fits(fit, xl, yl, colors)
+
+# Print main
+print_fits(fit, colors)
