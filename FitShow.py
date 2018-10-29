@@ -69,24 +69,19 @@ if len(argv) < 3: usage()
 if '' == cube: exit(1)
 
 
-# Reshape
-fit = fits.getdata(cube)
-shape = fit.shape
-print('Initial image shape', shape)
-if xmax is None: xmax = shape[-1]
-if ymax is None: ymax = shape[-2]
-if len(shape) > 2:
-	print('Collapsing dimension', dim)
-	if zmax is None: zmax = shape[0]
-	fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
-else:
-	fit = fit[ymin:ymax + 1, xmin:xmax + 1]
-
-# Extract shape
-if std is None: std = np.nanstd(fit)
-print('\nGenerating image with std', std, '\nNew image shape', fit.shape)
-std = bin * std
-
+def reshape(fit, xmin, xmax, ymin, ymax, zmin, zmax):
+	""" Rescale on user demand : fit -> fit """
+	shape = fit.shape
+	print('Initial image shape', shape)
+	if xmax is None: xmax = shape[-1]
+	if ymax is None: ymax = shape[-2]
+	if len(shape) > 2:
+		print('Collapsing dimension', dim)
+		if zmax is None: zmax = shape[0]
+		fit = np.nanmean(fit[zmin:zmax + 1, ymin:ymax + 1, xmin:xmax + 1], dim)
+	else:
+		fit = fit[ymin:ymax + 1, xmin:xmax + 1]
+	return fit
 
 
 def interpolate(fit):
@@ -108,7 +103,13 @@ def interpolate(fit):
 	yl, xl = fit.shape
 	return fit
 
-if interpolate: fit = interpolate(fit)
+
+def mesure_noise(fit):
+	""" fit -> std """
+	if std is None: noise = np.nanstd(fit)
+	else : noise = std
+	print('\nGenerating image with std', noise, '\nNew image shape', fit.shape)
+	return bin * noise
 
 
 def print_cell(fit, x, y):
@@ -134,5 +135,17 @@ def print_fits(fit):
 	print(s, '\033[0m ' * colors)
 
 
+# Read input image
+fit = fits.getdata(cube)
+
+# Extract shape
+reshape(fit, xmin, xmax, ymin, ymax, zmin, zmax)
+
+# Noise calculation
+std = mesure_noise(fit)
+
+# Interpolate (metrically on x and y)
+if interpolate: fit = interpolate(fit)
+
 # Print main
-print_fits(fit, colors)
+print_fits(fit)
