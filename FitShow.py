@@ -1,10 +1,8 @@
 from __future__ import print_function
-
-__author__ = 'nefinia'
+__author__ = 'Sofia G. Gallego <nefinia>'
 import numpy as np
 import astropy.io.fits as fits
 from sys import argv
-
 
 def rdarg(argv, key, type=None, default=None, listtype=int):
 	if len(argv) > 1:
@@ -28,7 +26,6 @@ def rdarg(argv, key, type=None, default=None, listtype=int):
 			return name
 	if default is not None: return default
 
-
 cube = rdarg(argv, 'name', str, '')
 std = rdarg(argv, 'std', float, None)
 bin = rdarg(argv, 'bin', int, 1)
@@ -43,8 +40,8 @@ zmax = rdarg(argv, 'zmax', int, None)
 interpolate = rdarg(argv, 'interp', bool, True)
 
 if len(argv) < 3:
-	print("""FitShow\n\
-	Print fits files in the terminal.
+	print("""FitShow
+    Print fits files in the terminal.
     Each pixel will be displayed as a number corresponding to its
     standard deviation with respect to the mean.
     Negative values will be displayed with '-'.
@@ -99,8 +96,7 @@ if cube != '':
 			d = fit[y, x]
 			if d < 0: s += '\033[0m' * colors + '-'
 			for i in range(10):
-				if (d >= i * std) & (d < (i + 1) * std):
-					s += ('\033[1;3%dm' % i) * colors + '%d' % i
-			if d >= 10 * std: s += '\033[0m' * colors + '*'
+				if (d >= i * std) & (d < (i + 1) * std): s += ('\033[1;3%dm' % i) * colors + '%d' % i
+			if d >= 10 * std: s += '\033[0m' * colors + '#'
 		s += '\n'
 	print(s, '\033[0m ' * colors)
